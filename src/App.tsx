@@ -1,5 +1,9 @@
 import { useState } from 'react'
-import { Globe, Zap, Clock, Play, ChevronRight, CheckCircle, Users, Database, FileText, BarChart3, Search, Shield, Cpu, Cloud, Network, Eye } from 'lucide-react'
+import { 
+  Shield, Globe, Zap, Clock, Play, ChevronRight, ChevronDown, ChevronUp,
+  CheckCircle, Users, Database, FileText, BarChart3, Search, AlertTriangle,
+  Cpu, Cloud, Network, Eye, TrendingUp, ArrowRight, XCircle, AlertCircle
+} from 'lucide-react'
 
 // ========== UI Components ==========
 function Button({ children, onClick, variant = 'primary', className = '' }: any) {
@@ -12,8 +16,8 @@ function Button({ children, onClick, variant = 'primary', className = '' }: any)
   return <button onClick={onClick} className={`${base} ${styles[variant as keyof typeof styles]} ${className}`}>{children}</button>
 }
 
-function Card({ children, className = '' }: any) {
-  return <div className={`bg-white rounded-xl border border-slate-200 shadow-sm ${className}`}>{children}</div>
+function Card({ children, className = '', onClick }: any) {
+  return <div onClick={onClick} className={`bg-white rounded-xl border border-slate-200 shadow-sm ${className}`}>{children}</div>
 }
 
 function CardHeader({ children, className = '' }: any) {
@@ -57,12 +61,144 @@ function Separator() {
   return <div className="h-px bg-slate-200 my-4" />
 }
 
-// ========== Feature 1: Three-Tier Service Model ==========
+// ========== ENHANCED Feature 1: Interactive Pricing Tiers ==========
+function PricingTierCard({ tier, isExpanded, onToggle }: any) {
+  return (
+    <Card 
+      className={`cursor-pointer transition-all ${isExpanded ? 'border-blue-400 ring-2 ring-blue-100' : 'hover:border-slate-300'}`}
+      onClick={onToggle}
+    >
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+              tier.popular ? 'bg-blue-100' : 'bg-slate-100'
+            }`}>
+              <tier.icon className={`w-6 h-6 ${tier.popular ? 'text-blue-600' : 'text-slate-600'}`} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xl font-bold text-slate-900">{tier.name}</h3>
+                {tier.popular && (
+                  <Badge className="bg-blue-600 text-white text-xs">POPULAR</Badge>
+                )}
+              </div>
+              <p className="text-sm text-slate-500">{tier.turnaround} • {tier.target}</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-2xl font-bold text-slate-900">{tier.price}</div>
+            <div className="text-xs text-green-600 font-medium">{tier.discount}</div>
+          </div>
+          <div className="ml-4">
+            {isExpanded ? (
+              <ChevronUp className="w-5 h-5 text-blue-600" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-slate-400" />
+            )}
+          </div>
+        </div>
+      </CardHeader>
+
+      {isExpanded && (
+        <CardContent>
+          <Separator />
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                Included Services
+              </h4>
+              <ul className="space-y-2">
+                {tier.services.map((service: string, idx: number) => (
+                  <li key={idx} className="flex items-start gap-2 text-sm text-slate-600">
+                    <span className="text-green-500 mt-0.5">✓</span>
+                    {service}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+              <div>
+                <span className="text-xs text-slate-500">Turnaround</span>
+                <p className="font-medium text-slate-900">{tier.turnaround}</p>
+              </div>
+              <div>
+                <span className="text-xs text-slate-500">Target</span>
+                <p className="font-medium text-slate-900">{tier.target}</p>
+              </div>
+            </div>
+
+            <Button variant="primary" className="w-full justify-center mt-4">
+              Get Started with {tier.name}
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </CardContent>
+      )}
+    </Card>
+  )
+}
+
 function FeatureConfirmation() {
+  const [expandedTier, setExpandedTier] = useState<string | null>('Professional')
+
   const tiers = [
-    { name: 'Essential', price: '$300-500', turnaround: '48-72 hours', discount: '$180-300 (40% off)', features: ['AI-automated screening', 'Identity verification', 'Litigation screening'], target: 'Seed-stage investments' },
-    { name: 'Professional', price: '$800-1,500', turnaround: '5-7 days', discount: '$560-1,050 (40% off)', features: ['Founder interviews', 'Reference verification', 'Financial analysis'], target: 'Series A investments', popular: true },
-    { name: 'Enterprise', price: '$2,500-5,000', turnaround: '10-15 days', discount: '$1,750-3,500 (40% off)', features: ['Site visits', 'Forensic analysis', 'Team assessment'], target: 'Series B+ transactions' }
+    {
+      id: 'essential',
+      name: 'Essential',
+      price: '$300-500',
+      turnaround: '48-72 hours',
+      discount: 'Year 1: $180-300 (40% off)',
+      target: 'Seed-stage investments',
+      icon: FileText,
+      services: [
+        'AI-automated screening and data collection',
+        'Identity & credential verification',
+        'Litigation & media screening',
+        'Basic financial health check',
+        'Automated red flag detection'
+      ]
+    },
+    {
+      id: 'professional',
+      name: 'Professional',
+      price: '$800-1,500',
+      turnaround: '5-7 business days',
+      discount: 'Year 1: $560-1,050 (40% off)',
+      target: 'Series A investments',
+      icon: Users,
+      popular: true,
+      services: [
+        'Founder behavioral interview (60 min)',
+        'Reference verification (3+ contacts)',
+        'Basic operational assessment',
+        'Financial health analysis',
+        'Management team background check',
+        'Customer validation calls (2-3)',
+        'Network mapping & reputation check'
+      ]
+    },
+    {
+      id: 'enterprise',
+      name: 'Enterprise',
+      price: '$2,500-5,000',
+      turnaround: '10-15 business days',
+      discount: 'Year 1: $1,750-3,500 (40% off)',
+      target: 'Series B+ transactions',
+      icon: Shield,
+      services: [
+        'Extended site presence (2-3 days)',
+        'In-depth network mapping & reputation',
+        'Forensic document analysis',
+        'Comprehensive management assessment',
+        'Supply chain verification',
+        'Competitive landscape analysis',
+        'Regulatory compliance deep-dive',
+        'Exit scenario evaluation'
+      ]
+    }
   ]
 
   return (
@@ -70,39 +206,39 @@ function FeatureConfirmation() {
       <div className="text-center">
         <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-4">Feature Overview</span>
         <h2 className="text-3xl font-bold text-slate-900 mb-4">4 Core Demo Features</h2>
-        <p className="text-slate-600 max-w-2xl mx-auto">Based on the DDaaS Feasibility Analysis, these four features form the foundation of the demo platform.</p>
+        <p className="text-slate-600 max-w-2xl mx-auto">
+          Based on the DDaaS Feasibility Analysis, these four features form the foundation of the demo platform.
+        </p>
+        <p className="text-sm text-slate-500 mt-2">Click on any pricing tier to see detailed services</p>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Feature 1: Service Tiers */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                <FileText className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <Badge className="bg-slate-100 text-slate-700 mb-2">Feature 1</Badge>
-                <h3 className="text-xl font-bold text-slate-900">Three-Tier Service Model</h3>
-                <p className="text-sm text-slate-600">Flexible pricing for different investment stages</p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {tiers.map((tier) => (
-                <div key={tier.name} className={`p-3 rounded-lg border ${tier.popular ? 'border-blue-300 bg-blue-50' : 'border-slate-200'}`}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-semibold text-slate-900">{tier.name}</span>
-                    <span className="font-bold text-slate-900">{tier.price}</span>
-                  </div>
-                  <div className="text-xs text-slate-500 mb-2">{tier.turnaround} • {tier.target}</div>
-                  <div className="text-xs text-green-600 font-medium">{tier.discount}</div>
+        <div className="lg:col-span-2 space-y-4">
+          <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+            <CardHeader>
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-blue-600" />
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <div>
+                  <Badge className="bg-blue-600 text-white mb-2">Feature 1</Badge>
+                  <h3 className="text-xl font-bold text-slate-900">Three-Tier Service Model</h3>
+                  <p className="text-sm text-slate-600">Click any tier below to expand and see all included services</p>
+                </div>
+              </div>
+            </CardHeader>
+          </Card>
+
+          {tiers.map((tier) => (
+            <PricingTierCard
+              key={tier.id}
+              tier={tier}
+              isExpanded={expandedTier === tier.id}
+              onToggle={() => setExpandedTier(expandedTier === tier.id ? null : tier.id)}
+            />
+          ))}
+        </div>
 
         {/* Feature 2: AI-Human Workflow */}
         <Card>
@@ -180,45 +316,6 @@ function FeatureConfirmation() {
                   <div className="text-xs text-slate-500">{m.deals} • {m.funding}</div>
                 </div>
               ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Feature 4: Risk Assessment */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-                <Shield className="w-6 h-6 text-red-600" />
-              </div>
-              <div>
-                <Badge className="bg-slate-100 text-slate-700 mb-2">Feature 4</Badge>
-                <h3 className="text-xl font-bold text-slate-900">Risk Assessment Engine</h3>
-                <p className="text-sm text-slate-600">5-category risk scoring system</p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {[
-                { category: 'Financial Risk', weight: '25%' },
-                { category: 'Operational Risk', weight: '25%' },
-                { category: 'Legal/Compliance', weight: '20%' },
-                { category: 'Founder/Team', weight: '20%' },
-                { category: 'Market Risk', weight: '10%' }
-              ].map((r) => (
-                <div key={r.category} className="flex items-center justify-between">
-                  <span className="text-sm text-slate-700">{r.category}</span>
-                  <span className="font-medium text-slate-900">{r.weight}</span>
-                </div>
-              ))}
-            </div>
-            <Separator />
-            <div className="grid grid-cols-2 gap-2">
-              <div className="p-2 rounded bg-green-100 text-green-700 text-xs font-medium">Low: 1-3</div>
-              <div className="p-2 rounded bg-amber-100 text-amber-700 text-xs font-medium">Medium: 4-6</div>
-              <div className="p-2 rounded bg-orange-100 text-orange-700 text-xs font-medium">High: 7-8</div>
-              <div className="p-2 rounded bg-red-100 text-red-700 text-xs font-medium">Critical: 9-10</div>
             </div>
           </CardContent>
         </Card>
@@ -418,6 +515,276 @@ function SystemArchitecture() {
   )
 }
 
+// ========== ENHANCED Feature 4: Interactive Risk Categories with Tabs ==========
+function RiskAssessment() {
+  const [activeCategory, setActiveCategory] = useState('financial')
+
+  const riskCategories = {
+    financial: {
+      name: 'Financial Risk',
+      weight: '25%',
+      color: 'blue',
+      description: 'Assessment of financial health, revenue validation, and fiscal stability',
+      indicators: [
+        'Revenue verification & validation',
+        'Cash flow analysis',
+        'Debt & liability assessment',
+        'Financial statement review',
+        'Burn rate evaluation'
+      ],
+      sampleFinding: {
+        severity: 'high',
+        title: 'Revenue Concentration Risk',
+        description: '65% of revenue from single customer creates significant dependency',
+        score: 7.2,
+        impact: 'High customer churn risk if contract is lost'
+      }
+    },
+    operational: {
+      name: 'Operational Risk',
+      weight: '25%',
+      color: 'amber',
+      description: 'Evaluation of business operations, supply chain, and execution capability',
+      indicators: [
+        'Site verification & operational audit',
+        'Customer validation calls',
+        'Supplier relationship assessment',
+        'Process documentation review',
+        'Key personnel dependency'
+      ],
+      sampleFinding: {
+        severity: 'medium',
+        title: 'Limited Operational History',
+        description: 'Company operating for only 18 months with limited track record',
+        score: 5.4,
+        impact: 'Unproven scalability and operational resilience'
+      }
+    },
+    legal: {
+      name: 'Legal/Compliance',
+      weight: '20%',
+      color: 'purple',
+      description: 'Review of legal standing, regulatory compliance, and IP protection',
+      indicators: [
+        'Litigation & dispute check',
+        'Regulatory compliance verification',
+        'IP ownership & protection',
+        'Contract review',
+        'Corporate governance assessment'
+      ],
+      sampleFinding: {
+        severity: 'low',
+        title: 'Standard IP Assignments',
+        description: 'All IP properly assigned to company with clean ownership chain',
+        score: 2.1,
+        impact: 'No legal risks identified in IP portfolio'
+      }
+    },
+    founder: {
+      name: 'Founder/Team',
+      weight: '20%',
+      color: 'red',
+      description: 'Background check on founders, management team assessment, and references',
+      indicators: [
+        'Founder background verification',
+        'Reference interviews (3+)',
+        'Track record analysis',
+        'Management team assessment',
+        'Character & reputation check'
+      ],
+      sampleFinding: {
+        severity: 'high',
+        title: 'Prior Business Failure',
+        description: 'Founder previously led company that filed for bankruptcy in 2019',
+        score: 8.5,
+        impact: 'Potential governance and decision-making concerns'
+      }
+    },
+    market: {
+      name: 'Market Risk',
+      weight: '10%',
+      color: 'green',
+      description: 'Analysis of market size, competitive position, and growth trajectory',
+      indicators: [
+        'Market size validation (TAM/SAM/SOM)',
+        'Competitive positioning',
+        'Growth trajectory analysis',
+        'Industry trend assessment',
+        'Customer acquisition metrics'
+      ],
+      sampleFinding: {
+        severity: 'medium',
+        title: 'Competitive Market Entry',
+        description: 'Entering saturated market with 15+ established competitors',
+        score: 5.8,
+        impact: 'Differentiation and customer acquisition challenges expected'
+      }
+    }
+  }
+
+  const currentCategory = riskCategories[activeCategory as keyof typeof riskCategories]
+
+  const getSeverityColor = (severity: string) => {
+    const colors = {
+      low: { bg: 'bg-green-100', border: 'border-green-300', text: 'text-green-800', badge: 'bg-green-500' },
+      medium: { bg: 'bg-amber-100', border: 'border-amber-300', text: 'text-amber-800', badge: 'bg-amber-500' },
+      high: { bg: 'bg-red-100', border: 'border-red-300', text: 'text-red-800', badge: 'bg-red-500' }
+    }
+    return colors[severity as keyof typeof colors] || colors.medium
+  }
+
+  const colors = getSeverityColor(currentCategory.sampleFinding.severity)
+
+  return (
+    <div className="space-y-8">
+      <div className="text-center">
+        <span className="inline-block px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium mb-4">Feature 4 Enhanced</span>
+        <h2 className="text-3xl font-bold text-slate-900 mb-4">Interactive Risk Assessment</h2>
+        <p className="text-slate-600 max-w-2xl mx-auto">
+          5-category risk scoring system with detailed indicators and sample findings.
+        </p>
+        <p className="text-sm text-slate-500 mt-2">Click on each category tab to explore</p>
+      </div>
+
+      {/* Category Tabs */}
+      <div className="flex flex-wrap gap-2 bg-slate-100 p-2 rounded-xl">
+        {Object.entries(riskCategories).map(([key, category]) => (
+          <button
+            key={key}
+            onClick={() => setActiveCategory(key)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              activeCategory === key
+                ? 'bg-white text-slate-900 shadow-sm ring-2 ring-blue-500'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+            }`}
+          >
+            {category.name}
+            <span className="ml-2 text-xs opacity-70">{category.weight}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Category Details */}
+      <Card className="border-t-4 border-t-blue-500">
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="text-2xl font-bold text-slate-900">{currentCategory.name} Assessment</h3>
+              <p className="text-slate-600 mt-1">{currentCategory.description}</p>
+            </div>
+            <Badge className="bg-blue-100 text-blue-700 text-sm px-3 py-1">
+              Weight: {currentCategory.weight}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Risk Indicators */}
+            <div>
+              <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-blue-500" />
+                Risk Indicators
+              </h4>
+              <ul className="space-y-2">
+                {currentCategory.indicators.map((indicator, idx) => (
+                  <li key={idx} className="flex items-start gap-2 text-sm text-slate-600 p-2 bg-slate-50 rounded-lg">
+                    <span className="text-blue-500 mt-0.5">•</span>
+                    {indicator}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Sample Finding */}
+            <div>
+              <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-amber-500" />
+                Sample Finding
+              </h4>
+              <div className={`p-4 rounded-xl border-2 ${colors.bg} ${colors.border}`}>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`w-3 h-3 rounded-full ${colors.badge}`}></span>
+                  <span className={`text-xs font-bold uppercase ${colors.text}`}>
+                    {currentCategory.sampleFinding.severity} Risk
+                  </span>
+                </div>
+                <h5 className={`font-bold text-lg mb-1 ${colors.text}`}>
+                  {currentCategory.sampleFinding.title}
+                </h5>
+                <p className={`text-sm mb-3 ${colors.text}`}>
+                  {currentCategory.sampleFinding.description}
+                </p>
+                <div className="flex items-center justify-between pt-3 border-t border-current border-opacity-20">
+                  <div>
+                    <span className={`text-xs ${colors.text} opacity-70`}>Risk Score</span>
+                    <p className={`font-bold text-xl ${colors.text}`}>
+                      {currentCategory.sampleFinding.score}/10
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className={`text-xs ${colors.text} opacity-70`}>Impact</span>
+                    <p className={`text-sm ${colors.text}`}>
+                      {currentCategory.sampleFinding.impact}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Risk Score Summary */}
+      <Card className="bg-slate-50">
+        <CardHeader>
+          <h3 className="font-semibold text-slate-900">Overall Risk Score Breakdown</h3>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {Object.entries(riskCategories).map(([key, category]) => {
+              const score = category.sampleFinding.score
+              const isActive = activeCategory === key
+              return (
+                <div 
+                  key={key} 
+                  onClick={() => setActiveCategory(key)}
+                  className={`flex items-center gap-4 p-3 rounded-lg cursor-pointer transition-all ${
+                    isActive ? 'bg-white shadow-sm ring-2 ring-blue-200' : 'hover:bg-white'
+                  }`}
+                >
+                  <div className="w-24 text-sm font-medium text-slate-700">{category.name}</div>
+                  <div className="flex-1">
+                    <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full transition-all ${
+                          score <= 3 ? 'bg-green-500' : score <= 6 ? 'bg-amber-500' : 'bg-red-500'
+                        }`}
+                        style={{ width: `${(score / 10) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div className="w-16 text-right">
+                    <span className={`font-bold ${
+                      score <= 3 ? 'text-green-600' : score <= 6 ? 'text-amber-600' : 'text-red-600'
+                    }`}>
+                      {score}
+                    </span>
+                    <span className="text-xs text-slate-400 ml-1">{category.weight}</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          <div className="mt-4 pt-4 border-t border-slate-200 flex items-center justify-between">
+            <span className="text-sm text-slate-600">Overall Weighted Score</span>
+            <span className="text-2xl font-bold text-amber-600">5.8/10</span>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
 // ========== Demo Dashboard ==========
 function DemoDashboard() {
   const [activeTab, setActiveTab] = useState('overview')
@@ -527,16 +894,17 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Header with Logo */}
+      {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              {/* GroundState Logo */}
-              <img src="/logo.png" alt="GroundState" className="h-10 w-auto" />
-              <div className="border-l border-slate-200 pl-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg flex items-center justify-center">
+                <Shield className="w-6 h-6 text-white" />
+              </div>
+              <div>
                 <h1 className="text-xl font-bold text-slate-900">DDaaS Platform</h1>
-                <p className="text-xs text-slate-500">Due Diligence-as-a-Service Demo</p>
+                <p className="text-xs text-slate-500">Due Diligence-as-a-Service Demo v2</p>
               </div>
             </div>
             <nav className="hidden md:flex items-center gap-6">
@@ -581,13 +949,13 @@ function App() {
         {activeTab === 'demo' && <DemoDashboard />}
       </main>
 
-      {/* Footer with Logo */}
+      {/* Footer */}
       <footer className="bg-slate-900 text-slate-400 py-12 mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <img src="/logo.png" alt="GroundState" className="h-8 w-auto" />
+                <Shield className="w-6 h-6 text-blue-500" />
                 <span className="text-white font-bold">DDaaS Platform</span>
               </div>
               <p className="text-sm">Hybrid AI-human due diligence for Southeast Asian markets.</p>
@@ -602,14 +970,11 @@ function App() {
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Contact</h4>
-              <p className="text-sm">demo@groundstate.com</p>
+              <p className="text-sm">demo@ddaas-platform.com</p>
             </div>
           </div>
           <Separator />
-          <div className="flex items-center justify-center gap-2 mt-8">
-            <img src="/logo.png" alt="GroundState" className="h-6 w-auto opacity-50" />
-            <p className="text-center text-sm">© 2026 GroundState DDaaS Platform Demo</p>
-          </div>
+          <p className="text-center text-sm mt-8">© 2026 DDaaS Platform Demo v2</p>
         </div>
       </footer>
     </div>
